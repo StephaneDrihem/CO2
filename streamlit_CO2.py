@@ -4,6 +4,6 @@ import numpy as np
 
 st.title("Emissions de CO2")
 
-df2013 = pd.read_csv("gov2013.csv",encoding='latin1', sep=';')
+df2013 = pd.read_csv('gov2013.csv',encoding='latin1', sep=';')
 
 st.dataframe(df2013.head())
