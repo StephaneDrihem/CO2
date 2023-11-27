@@ -111,11 +111,12 @@ st.write(tauxNA)
 st.write("Très peu de valeurs sont manquantes, excepté pour la variable Particules (15%). La corrélation entre ces variables n'est pas vérifiée. le coefficient de corrélation n'est que de ", np.round(df['Particules (g/km)'].corr(df['CO2 (g/km)']), 2).astype('str'), ".\nOn peut observer la relation non linéaire entre ces 2 variables au travers d'un graphique : ")
 
 
-#figure = plt.figure()
-#plt.scatter(df['Particules (g/km)'], df['CO2 (g/km)'])
-#plt.title('Relation entre les Particules émises et les émissions de CO2')
-#plt.xlabel('Emissions de particules')
-#plt.ylabel('Emissions de CO2')
+figure, ax = plt.subplots()
+ax.scatter(df['Particules (g/km)'], df['CO2 (g/km)'])
+ax.title('Relation entre les Particules émises et les émissions de CO2')
+ax.xlabel('Emissions de particules')
+ax.ylabel('Emissions de CO2')
+st.pyplot(figure)
 
 #plt.subplot(312)
 #plt.scatter(df['CO type I (g/km)'], df['CO2 (g/km)'])
