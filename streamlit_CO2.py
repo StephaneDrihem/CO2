@@ -126,7 +126,7 @@ plt.ylabel('Emissions de CO2')
 
 plt.subplot(313)
 plt.scatter(df['NOX (g/km)'], df['CO2 (g/km)'])
-plt.title('Relation entre l'oxyde d'azote émis et les émissions de CO2')
+plt.title("Relation entre l'oxyde d'azote émis et les émissions de CO2")
 plt.xlabel('Emissions d'oxyde d'azote')
 plt.ylabel('Emissions de CO2')
 
