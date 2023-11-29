@@ -4,13 +4,13 @@ import numpy as np
 
 import matplotlib.pyplot as plt 
 
-#from sklearn.model_selection import train_test_split, GridSearchCV
-#from sklearn.preprocessing import StandardScaler
-#from sklearn.linear_model import LinearRegression, ElasticNetCV
-#from sklearn.tree import DecisionTreeRegressor
-#from sklearn import svm
-#from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, VotingRegressor, StackingRegressor
-#from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression, ElasticNetCV
+from sklearn.tree import DecisionTreeRegressor
+from sklearn import svm
+from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, VotingRegressor, StackingRegressor
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 
 st.title('Quelles sont les émissions de CO2 d’une voiture ? :dash:')
@@ -109,6 +109,29 @@ for i in df.columns:
 st.write("**Gestion des NaN :**")
 st.write(tauxNA)
 st.write("Très peu de valeurs sont manquantes, excepté pour la variable Particules (15%). La corrélation entre ces variables n'est pas vérifiée. le coefficient de corrélation n'est que de ", np.round(df['Particules (g/km)'].corr(df['CO2 (g/km)']), 2).astype('str'), ".\nOn peut observer la relation non linéaire entre ces 2 variables au travers d'un graphique : ")
+
+
+figure = plt.figure(figsize=(6,18))
+plt.subplot(311)
+plt.scatter(df['Particules (g/km)'], df['CO2 (g/km)'])
+plt.title('Relation entre les Particules émises et les émissions de CO2')
+plt.xlabel("Particules émises")
+plt.ylabel('Emissions de CO2')
+
+plt.subplot(312)
+plt.scatter(df['CO type I (g/km)'], df['CO2 (g/km)'])
+plt.title('Relation entre les Co type I émises et les émissions de CO2')
+plt.xlabel("CO type I émis")
+plt.ylabel('Emissions de CO2')
+
+plt.subplot(313)
+plt.scatter(df['NOX (g/km)'], df['CO2 (g/km)'])
+plt.title("Relation entre l'oxyde d'azote émis et les émissions de CO2")
+plt.xlabel("Oxyde d'azote émis")
+plt.ylabel('Emissions de CO2')
+
+st.pyplot(figure)
+
 
 #On supprime donc cette variable de notre jeu de données
 df = df.drop('Particules (g/km)', axis=1)
