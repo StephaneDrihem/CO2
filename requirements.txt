@@ -1,2 +1,2 @@
-matplotlib == 3.8
+matplotlib.pyplot == 3.8
 python == 3.9
