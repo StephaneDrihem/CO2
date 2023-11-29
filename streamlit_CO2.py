@@ -3,6 +3,13 @@ import pandas as pd
 import numpy as np
 
 
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression, ElasticNetCV
+from sklearn.tree import DecisionTreeRegressor
+from sklearn import svm
+from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, VotingRegressor, StackingRegressor
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 
 st.title('Quelles sont les émissions de CO2 d’une voiture ? :dash:')
