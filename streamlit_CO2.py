@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-
-import matplotlib.pyplot as plt 
-
+import matplotlib.pyplot as plt
+import seaborn as sns
+import statsmodels.api
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression, ElasticNetCV
@@ -12,11 +12,10 @@ from sklearn import svm
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, VotingRegressor, StackingRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
-
 st.title('Quelles sont les émissions de CO2 d’une voiture ? :dash:')
 
 st.sidebar.title("Sommaire")
-pages=["Introduction", "Exploration", "DataVizualization", "Modélisation"]
+pages=["Introduction", "Exploration, Pre-preprocessing", "Data Vizualization", "Modélisation"]
 page=st.sidebar.radio("Aller vers", pages)
 
 if page == pages[0]:
@@ -29,9 +28,9 @@ if page ==pages[1]:
   st.write("### Exploration")
 
 #Importation des datasets sur plusieurs années
-df2012 = pd.read_csv('BASE CL MAJ JUIN 2012.csv', encoding='latin1', sep=';')
-df2013 = pd.read_csv('gov2013.csv', encoding='latin1', sep=';')
-df2014 = pd.read_csv('mars-2014-complete.csv', encoding='latin1', sep=';')
+df2012 = pd.read_csv('/content/drive/MyDrive/Colab Notebooks/Projet - Voiture et emissions de CO2/BASE CL MAJ JUIN 2012.csv', encoding='latin1', sep=';')
+df2013 = pd.read_csv('/content/drive/MyDrive/Colab Notebooks/Projet - Voiture et emissions de CO2/gov2013.csv', encoding='latin1', sep=';')
+df2014 = pd.read_csv('/content/drive/MyDrive/Colab Notebooks/Projet - Voiture et emissions de CO2/mars-2014-complete.csv', encoding='latin1', sep=';')
 
 #Harmonisation des noms de colonnes (nom de colonne dataset 2013 /=/ nom de colonne dataset 2012 et 2014)
 #Nom de colonne = base 2013 (plus claire pour la compréhension)
@@ -132,7 +131,6 @@ plt.ylabel('Emissions de CO2')
 
 st.pyplot(figure)
 
-
 #On supprime donc cette variable de notre jeu de données
 df = df.drop('Particules (g/km)', axis=1)
 
@@ -146,3 +144,102 @@ df['NOX (g/km)'] = df['NOX (g/km)'].fillna(df['NOX (g/km)'].median())
 
 st.write("**Variables retenues de notre jeu de données :**")
 st.write(df.columns)
+
+figure = plt.figure()
+cor = df.corr()
+sns.heatmap(cor, annot=True, cmap='viridis').set(title='Heatmap des variables numériques')
+st.pyplot(figure)
+
+#VALEURS ABBERANTES
+
+st.write("**Il n'y a pas de valeurs abberrantes dans notre jeu de données.**")
+st.write("Nous allons présenter 2 exemples qui montreront que les valeurs extrêmes sont bien à prendre en compte.")
+
+st.write("*Gestion des outliers sur la variables CO2 :*")
+figure = plt.figure()
+sns.boxplot(x = df['CO2 (g/km)']).set(title='Boxplot sur la variable CO2')
+st.pyplot(figure)
+
+Q3 = df['CO2 (g/km)'].quantile(q=0.75)
+Q1 = df['CO2 (g/km)'].quantile(q=0.25)
+val_extr = Q3 + 1.5*(Q3-Q1)
+st.write("Seuil de valeur extrême *(Q3 * 1.5(Q3-Q1)) >*:", val_extr,"g de CO2 émis par km")
+
+CO2_valextr = df.loc[df['CO2 (g/km)'] > val_extr]
+st.write("% de valeur extrêmes :", np.round(len(CO2_valextr)/len(df['CO2 (g/km)'])*100, 0), "%")
+
+st.write("Les valeurs extrêmes ne semblent pas être aberrantes, sauf pour les valeurs >500g/km ")
+CO2_abb = df.loc[df['CO2 (g/km)'] > 500] #df sur les valeurs >500
+st.write("Nombre de valeurs aberrantes :", len(CO2_abb)) #Calcul du nombre de valeur qui semblent aberrantes
+
+st.write("Modèle(s) concerné(s) :", database.loc[CO2_abb.index]['Modèle dossier'].unique())
+st.write("Ces valeurs ne concernent qu'un modèle de voiture : l'Aston Martin one-77. Ces émissions de CO2 sont bien estimées à + de 500g/km.\nNous ne sommes pas en présence d'une valeur aberrante mais bien d'une valeur extrême")
+
+st.write("*Gestion des outliers sur la variable Puissance maximale :*")
+
+st.write("Les valeurs extrêmes ne semblent pas être aberrantes, sauf pour les valeurs > 520")
+maxi_abb = df.loc[df['Puissance maximale (kW)'] > 520] #df sur les valeurs >520
+st.write("Nombre de valeurs aberrantes :", len(maxi_abb)) #Calcul du nombre de valeur qui semblent aberrantes
+
+st.write("Modèle(s) concerné(s) :", database.loc[maxi_abb.index]['Modèle dossier'].unique())
+st.write("Gamme(s) de voiture concernée(s) :", database.loc[maxi_abb.index]['gamme'].unique())
+st.write("Ces valeurs ne concernent que des modèles de voiture de luxe. Il ne s'agit donc pas de valeurs aberrantes.")
+
+#REGROUPEMENT DE VALEURS
+st.write("Certaines modalités de Carrosserie méritent d'être regroupées entre elles :\
+\n\n- SPORT = COUPE + CABRIOLET \
+\n\n- VOLUMINEUSE = MONOSPACE + BREAK + COMBISPACE \
+\n\n- COMPACTE = BERLINE + MONOSPACE COMPACT + MINISPACE\n\n")
+
+df = df.replace(to_replace=['COUPE', 'CABRIOLET', 'MONOSPACE', 'BREAK', 'COMBISPACE', 'BERLINE', 'MONOSPACE COMPACT', 'MINISPACE'], value=['SPORT', 'SPORT', 'VOLUMINEUSE', 'VOLUMINEUSE', 'VOLUMINEUSE', 'COMPACTE', 'COMPACTE', 'COMPACTE'])
+
+st.write("Les gammes peuvent être regroupées comme suit : \
+\n\n- LUXE = LUXE \
+\n\n- MOYENNE = MOY-INFER + MOY-SUPER + SUPERIEURE + SPORT \
+\n\n- INFERIEURE = INFERIEURE + ECONOMIQUE \n\n")
+
+df = df.replace(['MOY-INFER', 'MOY-SUPER', 'SUPERIEURE', 'SPORT', 'ECONOMIQUE'], ['MOYENNE', 'MOYENNE', 'MOYENNE', 'MOYENNE', 'INFERIEURE'])
+
+st.write("Regroupement des valeurs sur le type de carburant: \
+\n\n- GO = DIESEL \
+\n\n- ES = ESSENCE \
+\n\n- EH = ESSENCE-ELECTRICITE (hybride non rechargeable) \
+\n\n- ES/GP = ESSENCE-GPL (Gaz pétrole liquéfié - butane ou propane) \
+\n\n- FE = SUPERETHANOL \
+\n\n- ES/GN = ESSENCE-GAZ NATUREL \
+\n\n- GH = DIESEL-ELECTRICITE (hybride non rechargeable) \
+\n\n- GN = GAZ NATUREL \
+\n\n- GL = DIESEL-ELECTRICITE (hybride rechargeable)")
+
+
+if page ==pages[2]:
+  st.write("### Data Vizualisation")
+
+#CO2 par categorie de voiture
+categorie = df.groupby(['Carrosserie']).agg({'CO2 (g/km)': 'mean'})
+
+figure = plt.figure()
+categorie.sort_values(by='CO2 (g/km)').plot(kind='barh', title='Nouvelles catégories et impact sur les émissions de CO2');
+st.pyplot(figure)
+
+#CO2 par gamme de voiture
+categorie = df.groupby(['gamme']).agg({'CO2 (g/km)': 'mean'})
+
+figure = plt.figure()
+categorie.sort_values(by='CO2 (g/km)').plot(kind='barh', title='Nouvelles catégories et impact sur les émissions de CO2');
+st.pyplot(figure)
+
+#Répartition entre les différentes catégories de Carrosserie et gamme sur notre jeu de données
+figure = plt.figure()
+plt.subplot(211)
+sns.countplot(y='Carrosserie', data=df, order = df['Carrosserie'].value_counts().index)
+plt.title('Répartition des données de notre jeu par type de Carrosserie')
+plt.xlabel("Nombre de voiture")
+plt.ylabel('Carrosseries')
+
+plt.subplot(212)
+sns.countplot(y='Gamme', data=df, order = df['gamme'].value_counts().index)
+plt.title('Répartition des données de notre jeu par gamme de voiture')
+plt.xlabel("Nombre de voiture")
+plt.ylabel('Gammes')
+st.pyplot(figure)
