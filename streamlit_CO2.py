@@ -146,8 +146,8 @@ df['NOX (g/km)'] = df['NOX (g/km)'].fillna(df['NOX (g/km)'].median())
 st.write("**Variables retenues de notre jeu de données :**")
 st.write(df.columns)
 
-figure = plt.figure()
 cor = df.corr()
+figure = plt.figure()
 sns.heatmap(cor, annot=True, cmap='viridis').set(title='Heatmap des variables numériques')
 st.pyplot(figure)
 
