@@ -29,9 +29,9 @@ if page ==pages[1]:
   st.write("### Exploration")
 
 #Importation des datasets sur plusieurs années
-df2012 = pd.read_csv('/content/drive/MyDrive/Colab Notebooks/Projet - Voiture et emissions de CO2/BASE CL MAJ JUIN 2012.csv', encoding='latin1', sep=';')
-df2013 = pd.read_csv('/content/drive/MyDrive/Colab Notebooks/Projet - Voiture et emissions de CO2/gov2013.csv', encoding='latin1', sep=';')
-df2014 = pd.read_csv('/content/drive/MyDrive/Colab Notebooks/Projet - Voiture et emissions de CO2/mars-2014-complete.csv', encoding='latin1', sep=';')
+df2012 = pd.read_csv('BASE CL MAJ JUIN 2012.csv', encoding='latin1', sep=';')
+df2013 = pd.read_csv('gov2013.csv', encoding='latin1', sep=';')
+df2014 = pd.read_csv('mars-2014-complete.csv', encoding='latin1', sep=';')
 
 #Harmonisation des noms de colonnes (nom de colonne dataset 2013 /=/ nom de colonne dataset 2012 et 2014)
 #Nom de colonne = base 2013 (plus claire pour la compréhension)
